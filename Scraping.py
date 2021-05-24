@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup as soup
 import pandas as pd
 from webdriver_manager.chrome import ChromeDriverManager
 import datetime as dt
+import Mission_to_Mars_Challenge
 
 def scrape_all():
     # Set up Splinter
@@ -18,7 +19,9 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
+        "hemispheres": mars_hemispheres(browser),
         "last_modified": dt.datetime.now()
+             
     }
     browser.quit()
     return data
@@ -96,6 +99,27 @@ def mars_facts():
     df
 
     return df.to_html()
+
+### Mars Images and titles
+def mars_hemispheres(browser):
+    url = 'https://marshemispheres.com/'
+    browser.visit(url)
+    
+    hemisphere_image_urls = []
+    url_title={}
+    for i in range(0,4):
+        full_img_elem = browser.find_by_tag('h3')[i]
+        full_img_elem.click()
+        html = browser.html
+        image_soup = soup(html,'html.parser')
+        full_img_link = browser.links.find_by_text('Sample')
+        url_title['img_url'] = full_img_link['href']
+        full_img_title = image_soup.find('h2', class_='title').get_text()
+        url_title['title'] = full_img_title
+        hemisphere_image_urls.append(url_title.copy()) 
+        browser.back()
+
+    return hemisphere_image_urls     
 
 if __name__ == "__main__":
     # If running as script, print scraped data
